@@ -224,7 +224,7 @@ go test -v ./migrations/...
 | 注册信息获取错误 EOF | Body 空或不是 JSON，或 Content-Type 错 | 按"五、调用示例"填 raw JSON |
 | GET `/api/v1/posts` items 每字段都是 0 / 空串 | 已查到 posts，但没把结果映射到 DTO | 见 `api/post/getlist.go`：需补 for 循环赋值 |
 | `Headers were already written. Wanted to override status code 401 with 500` | handler 出错前中间件已写过 Response（之前是 panic 遗留） | 当前 `SH.Error` 已 `c.Abort()` 且大多数 return 已补，若出现请检查对应 handler |
-| 数据库密码带 `:` 时 DSN 解析失败 | `config.yaml: password: mysql:scp_2733` 这种写法要注意 yaml 冒号解析 | 用引号括起来 `password: "mysql:scp_2733"`；或改成不含特殊字符的密码 |
+| 数据库密码带 `:` 时 DSN 解析失败 | `config.yaml: password:null 这种写法要注意 yaml 冒号解析 | 用引号括起来 `password: null；或改成不含特殊字符的密码 |
 
 ---
 
