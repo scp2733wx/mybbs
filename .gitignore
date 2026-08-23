@@ -1,0 +1,101 @@
+# ===== Go =====
+# 编译产物
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# 测试二进制
+*.test
+*.out
+*.prof
+coverage.out
+coverage.html
+
+# go workspace
+go.work
+go.work.sum
+
+# vendor
+vendor/
+
+# ===== IDE / 编辑器 =====
+# JetBrains
+.idea/
+*.iml
+
+# VSCode
+.vscode/*
+!.vscode/settings.json     # 保留团队共享 settings；如想完全忽略可取消注释
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===== 操作系统 =====
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===== 项目本地（可能包含敏感信息） =====
+# 配置覆盖文件（开发机专用）
+config/config.local.yaml
+config/*.local.yaml
+.env
+.env.*
+!.env.example
+
+# 临时迁移 / 导出 / 脚本
+tmp/
+temp/
+exports/
+*.sql.bak
+*.dump
+*.tar
+*.tar.gz
+*.zip
+
+# 调试 / 日志
+debug/
+*.debug
+*.trace
+logs/
+*.log
+
+# ===== Postman / 外部工具（可选） =====
+.postman/
+.vs/
