@@ -13,7 +13,7 @@
             "name": "mybbs",
             "database": "mybbs",
             "username": "root",
-            "password": "mysql:scp_2733"
+            "password": null
         }
     ]
 }
