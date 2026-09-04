@@ -1,15 +1,15 @@
 server:
   port: 8080
-  log_path: logs/
+  logpath: "your_log_path"
 
 database:
   enabled: true
   host: 127.0.0.1
   port: 3306
   username: root
-  password: yourpassword
+  password: "yourpassword"
   name: mybbs
   
 jwt:
-  secret: your_jwt_secret_key
+  secret: "your_jwt_secret_key"
   expiration: 24

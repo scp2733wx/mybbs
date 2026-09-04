@@ -8,4 +8,4 @@ config/config.yaml
 logs/
 
 # IDE 配置
-.vscode/
+.vscode/settings.json

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/spf13/viper"
@@ -15,7 +16,7 @@ type Config struct {
 
 type ServerConfig struct {
 	Port    int
-	LogPath string
+	Logpath string
 }
 
 type DatabaseConfig struct {
@@ -45,7 +46,10 @@ func Load() error {
 		return err
 	}
 
-	CFG.Server.LogPath += fmt.Sprintf("/%s.log", time.Now().Format("Monday_15"))
+	if CFG.Server.Logpath == "" {
+		CFG.Server.Logpath = "logs"
+	}
+	CFG.Server.Logpath = filepath.Join(CFG.Server.Logpath, fmt.Sprintf("/%s.log", time.Now().Format("Monday_15")))
 
 	return nil
 }

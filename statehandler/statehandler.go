@@ -31,8 +31,7 @@ func Error(c *gin.Context, code int, msg string, err error) {
 
 func PrintError(txt string, err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stderr, txt)
-		AddLog(err)
+		fmt.Fprintln(os.Stderr, txt, err)
 		os.Exit(1)
 	}
 }
