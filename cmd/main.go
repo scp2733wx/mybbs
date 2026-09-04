@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"mybbs/api/post"
-	"mybbs/api/user"
 	"mybbs/config"
 	db "mybbs/database"
 	"mybbs/router"
@@ -23,12 +21,6 @@ func main() {
 	DB, err := db.DB.DB()
 	SH.PrintError("获取数据失败:", err)
 	defer DB.Close()
-	db.DB.AutoMigrate(
-		&user.User{},
-		&post.Post{},
-		&post.Comment{},
-		&post.PostLike{},
-	)
 
 	engine := router.InitRouter()
 	engine.Run(fmt.Sprintf(":%d", config.CFG.Server.Port))

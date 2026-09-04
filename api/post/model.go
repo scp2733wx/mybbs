@@ -9,18 +9,19 @@ import (
 )
 
 type Comment struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	UserID    uint      `gorm:"index:idx_comments_user_id;not null" json:"user_id"`
-	User      user.User `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:RESTRICT,OnDelete:RESTRICT" json:"-"`
-	PostID    uint      `gorm:"index:idx_comments_post_created,sort:desc;not null" json:"post_id"`
-	Content   string    `gorm:"type:varchar(1000);not null" json:"content"`
-	CreatedAt time.Time `gorm:"index:idx_comments_post_created,sort:desc" json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	UserID    uint           `gorm:"index:idx_comments_user_id;not null" json:"user_id"`
+	User      user.User      `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:RESTRICT,OnDelete:RESTRICT" json:"-"`
+	PostID    uint           `gorm:"index:idx_comments_post_created,sort:desc;not null" json:"post_id"`
+	Content   string         `gorm:"type:varchar(1000);not null" json:"content"`
+	CreatedAt time.Time      `gorm:"index:idx_comments_post_created,sort:desc" json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }
 
-type PostLike struct {
-	UserID    uint      `gorm:"primaryKey;index:idx_post_likes_user_id" json:"user_id"`
-	PostID    uint      `gorm:"primaryKey" json:"post_id"`
+type Like struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `gorm:"not null;uniqueIndex:idx_user_post_like;index:idx_likes_user_id" json:"user_id"`
+	PostID    uint      `gorm:"not null;uniqueIndex:idx_user_post_like;index:idx_likes_post_id" json:"post_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

@@ -36,7 +36,7 @@ func DeletePost() gin.HandlerFunc {
 			SH.Error(c, http.StatusInternalServerError, "删除评论失败", err)
 			return
 		}
-		if err := db.DB.Where("post_id = ?", postID).Delete(&PostLike{}).Error; err != nil {
+		if err := db.DB.Where("post_id = ?", postID).Delete(&Like{}).Error; err != nil {
 			SH.Error(c, http.StatusInternalServerError, "删除点赞失败", err)
 			return
 		}
