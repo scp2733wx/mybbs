@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
+	db "mybbs/database"
 	SH "mybbs/statehandler"
 )
 
@@ -17,24 +17,24 @@ type RegisterGET struct {
 	Role     string `json:"role"`
 }
 
-func Register(db *gorm.DB) gin.HandlerFunc {
+func Register() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var RG RegisterGET
 		if err := c.ShouldBindJSON(&RG); err != nil {
-			SH.Error(c, http.StatusInternalServerError, "注册信息获取错误："+err.Error())
+			SH.Error(c, http.StatusInternalServerError, "注册信息获取错误", err)
 			return
 		}
 
 		var userTemp User
-		err := db.Where("username = ?", RG.Username).First(&userTemp).Error
+		err := db.DB.Where("username = ?", RG.Username).First(&userTemp).Error
 		if err == nil {
-			SH.Error(c, http.StatusConflict, "用户名重复")
+			SH.Error(c, http.StatusConflict, "用户名重复", nil)
 			return
 		}
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(RG.Password), bcrypt.DefaultCost)
 		if err != nil {
-			SH.Error(c, http.StatusInternalServerError, "哈希加密失败："+err.Error())
+			SH.Error(c, http.StatusInternalServerError, "哈希加密失败", err)
 			return
 		}
 
@@ -44,8 +44,8 @@ func Register(db *gorm.DB) gin.HandlerFunc {
 			PasswordHash: string(hashedPassword),
 			Role:         RG.Role,
 		}
-		if err := db.Create(&Newuser).Error; err != nil {
-			SH.Error(c, http.StatusInternalServerError, "注册用户数据错误："+err.Error())
+		if err := db.DB.Create(&Newuser).Error; err != nil {
+			SH.Error(c, http.StatusInternalServerError, "注册用户数据错误", err)
 			return
 		}
 

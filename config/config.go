@@ -1,16 +1,21 @@
 package config
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	JWT      JWTConfig
 }
 
 type ServerConfig struct {
-	Port int
+	Port    int
+	LogPath string
 }
 
 type DatabaseConfig struct {
@@ -22,17 +27,25 @@ type DatabaseConfig struct {
 	Name     string
 }
 
-func Load() (*Config, error) {
+type JWTConfig struct {
+	Secret     string
+	expiration int
+}
+
+var CFG Config
+
+func Load() error {
 	viper.SetConfigFile("config/config.yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+		return err
 	}
 
-	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
-		return nil, err
+	if err := viper.Unmarshal(&CFG); err != nil {
+		return err
 	}
 
-	return &cfg, nil
+	CFG.Server.LogPath += fmt.Sprintf("/%s.log", time.Now().Format("Monday_15"))
+
+	return nil
 }

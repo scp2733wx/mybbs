@@ -2,23 +2,34 @@ package main
 
 import (
 	"fmt"
+	"mybbs/api/post"
+	"mybbs/api/user"
 	"mybbs/config"
-	"mybbs/database"
+	db "mybbs/database"
 	"mybbs/router"
 	SH "mybbs/statehandler"
 )
 
 func main() {
-	cfg, err := config.Load()
+	err := config.Load()
 	SH.PrintError("加载配置文件失败:", err)
 
-	db, err := database.ConnectMySQL(cfg.Database)
+	err = SH.InitLogger()
+	SH.PrintError("初始化日志失败：", err)
+	defer SH.File.Close()
+
+	err = db.ConnectMySQL(config.CFG.Database)
 	SH.PrintError("连接MySQL失败:", err)
-	DB, err := db.DB()
+	DB, err := db.DB.DB()
 	SH.PrintError("获取数据失败:", err)
 	defer DB.Close()
-	database.AutoMigrate(db)
+	db.DB.AutoMigrate(
+		&user.User{},
+		&post.Post{},
+		&post.Comment{},
+		&post.PostLike{},
+	)
 
-	engine := router.InitRouter(db)
-	engine.Run(fmt.Sprintf(":%d", cfg.Server.Port))
+	engine := router.InitRouter()
+	engine.Run(fmt.Sprintf(":%d", config.CFG.Server.Port))
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	db "mybbs/database"
 	SH "mybbs/statehandler"
 )
 
@@ -19,23 +20,23 @@ type CommentResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func VeiwPost(db *gorm.DB) gin.HandlerFunc {
+func VeiwPost() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		postID, err := strconv.Atoi(c.Param("post_id"))
 		if err != nil {
-			SH.Error(c, http.StatusBadRequest, "获取帖子信息失败："+err.Error())
+			SH.Error(c, http.StatusBadRequest, "获取帖子信息失败", err)
 			return
 		}
 
 		var post Post
-		if err := db.Preload("User").Preload("Comments", func(db *gorm.DB) *gorm.DB {
+		if err := db.DB.Preload("User").Preload("Comments", func(db *gorm.DB) *gorm.DB {
 			return db.Order("created_at asc")
 		}).Preload("Comments.User").First(&post, postID).Error; err != nil {
-			SH.Error(c, http.StatusNotFound, "帖子不存在："+err.Error())
+			SH.Error(c, http.StatusNotFound, "帖子不存在", err)
 			return
 		}
 
-		if err := db.Model(&Post{}).Where("id = ?", postID).UpdateColumn("view_count", gorm.Expr("view_count + ?", 1)).Error; err == nil {
+		if err := db.DB.Model(&Post{}).Where("id = ?", postID).UpdateColumn("view_count", gorm.Expr("view_count + ?", 1)).Error; err == nil {
 			post.ViewCount += 1
 		}
 
@@ -64,7 +65,7 @@ func VeiwPost(db *gorm.DB) gin.HandlerFunc {
 				Name:     post.User.Name,
 				Role:     post.User.Role,
 			},
-			LikeCount: post.LikeCount,
+			LikeCount: GetLikeCount(post.ID),
 			ViewCount: post.ViewCount,
 			CreatedAt: post.CreatedAt,
 			Comments:  comments,

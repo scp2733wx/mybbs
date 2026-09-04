@@ -1,10 +1,15 @@
 server:
   port: 8080
+  log_path: logs/
 
 database:
   enabled: true
   host: 127.0.0.1
   port: 3306
   username: root
-  password: null
+  password: mysql:scp_2733
   name: mybbs
+  
+jwt:
+  secret: change-me-to-a-random-secret
+  expiration: 24

@@ -29,7 +29,6 @@ type Post struct {
 	UserID    uint           `gorm:"index:idx_posts_user_id;not null" json:"user_id"`
 	User      user.User      `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:RESTRICT,OnDelete:RESTRICT" json:"-"`
 	Content   string         `gorm:"type:varchar(2000);not null" json:"content"`
-	LikeCount int            `gorm:"not null;default:0;check:like_count >= 0" json:"like_count"`
 	ViewCount int            `gorm:"not null;default:0;check:view_count >= 0" json:"view_count"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

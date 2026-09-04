@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
+	db "mybbs/database"
 	SH "mybbs/statehandler"
 )
 
@@ -29,7 +29,7 @@ type PostResponse struct {
 	Comments     []CommentResponse `gorm:"foreignKey:PostID" json:"comments,omitempty"`
 }
 
-func GetPostList(db *gorm.DB) gin.HandlerFunc {
+func GetPostList() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil {
@@ -44,8 +44,8 @@ func GetPostList(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		var total int64
-		if err := db.Model(&Post{}).Count(&total).Error; err != nil {
-			SH.Error(c, http.StatusInternalServerError, "获取帖子总数失败："+err.Error())
+		if err := db.DB.Model(&Post{}).Count(&total).Error; err != nil {
+			SH.Error(c, http.StatusInternalServerError, "获取帖子总数失败", err)
 			return
 		}
 
@@ -58,8 +58,8 @@ func GetPostList(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		var posts []Post
-		if err := db.Model(&Post{}).Preload("User").Order(rule).Limit(pageSize).Offset((page - 1) * pageSize).Find(&posts).Error; err != nil {
-			SH.Error(c, http.StatusInternalServerError, "获取帖子列表失败："+err.Error())
+		if err := db.DB.Model(&Post{}).Preload("User").Order(rule).Limit(pageSize).Offset((page - 1) * pageSize).Find(&posts).Error; err != nil {
+			SH.Error(c, http.StatusInternalServerError, "获取帖子列表失败", err)
 			return
 		}
 
@@ -68,7 +68,7 @@ func GetPostList(db *gorm.DB) gin.HandlerFunc {
 			items = append(items, PostResponse{
 				ID:        p.ID,
 				Content:   p.Content,
-				LikeCount: p.LikeCount,
+				LikeCount: GetLikeCount(p.ID),
 				ViewCount: p.ViewCount,
 				CreatedAt: p.CreatedAt,
 				Author: auther{

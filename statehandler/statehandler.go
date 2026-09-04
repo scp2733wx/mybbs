@@ -8,8 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var JWTSecret = []byte("change-me-to-a-random-secret")
-
 type Envelope struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
@@ -25,14 +23,16 @@ func Success(c *gin.Context, data any) {
 	c.Abort()
 }
 
-func Error(c *gin.Context, code int, msg string) {
+func Error(c *gin.Context, code int, msg string, err error) {
 	JSON(c, code, code, msg, nil)
+	AddLog(err)
 	c.Abort()
 }
 
-func PrintError(txt string, err any) {
+func PrintError(txt string, err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stderr, txt, err)
+		fmt.Fprintln(os.Stderr, txt)
+		AddLog(err)
 		os.Exit(1)
 	}
 }

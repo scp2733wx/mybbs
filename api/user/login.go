@@ -7,8 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
+	"mybbs/config"
+	db "mybbs/database"
 	SH "mybbs/statehandler"
 )
 
@@ -17,21 +18,21 @@ type LoginGET struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Login(db *gorm.DB) gin.HandlerFunc {
+func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var LG LoginGET
 		if err := c.ShouldBindJSON(&LG); err != nil {
-			SH.Error(c, http.StatusBadRequest, "登录信息获取错误："+err.Error())
+			SH.Error(c, http.StatusBadRequest, "登录信息获取错误", err)
 			return
 		}
 
 		var userTemp User
-		if err := db.Where("username = ?", LG.Username).First(&userTemp).Error; err != nil {
-			SH.Error(c, http.StatusNotFound, "用户不存在")
+		if err := db.DB.Where("username = ?", LG.Username).First(&userTemp).Error; err != nil {
+			SH.Error(c, http.StatusNotFound, "用户不存在", err)
 			return
 		}
 		if err := bcrypt.CompareHashAndPassword([]byte(userTemp.PasswordHash), []byte(LG.Password)); err != nil {
-			SH.Error(c, http.StatusUnauthorized, "密码错误")
+			SH.Error(c, http.StatusUnauthorized, "密码错误", err)
 			return
 		}
 
@@ -46,9 +47,9 @@ func Login(db *gorm.DB) gin.HandlerFunc {
 			"exp":      time.Now().Add(time.Hour * time.Duration(expireHour)).Unix(),
 		}
 
-		token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(SH.JWTSecret)
+		token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(config.CFG.JWT.Secret))
 		if err != nil {
-			SH.Error(c, http.StatusInternalServerError, "生成JWT令牌失败："+err.Error())
+			SH.Error(c, http.StatusInternalServerError, "生成JWT令牌失败", err)
 			return
 		}
 

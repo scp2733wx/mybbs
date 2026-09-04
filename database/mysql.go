@@ -6,12 +6,12 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"mybbs/api/post"
-	"mybbs/api/user"
 	"mybbs/config"
 )
 
-func ConnectMySQL(cfg config.DatabaseConfig) (*gorm.DB, error) {
+var DB *gorm.DB
+
+func ConnectMySQL(cfg config.DatabaseConfig) error {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		cfg.Username,
@@ -21,28 +21,20 @@ func ConnectMySQL(cfg config.DatabaseConfig) (*gorm.DB, error) {
 		cfg.Name,
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	var err error
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	sqlDB, err := db.DB()
+	sqlDB, err := DB.DB()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if err := sqlDB.Ping(); err != nil {
 		_ = sqlDB.Close()
-		return nil, err
+		return err
 	}
-
-	return db, nil
-}
-
-func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
-		&user.User{},
-		&post.Post{},
-		&post.Comment{},
-		&post.PostLike{},
-	)
+	err = nil
+	return err
 }

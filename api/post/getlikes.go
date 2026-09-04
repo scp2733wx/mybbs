@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
+	db "mybbs/database"
 	SH "mybbs/statehandler"
 )
 
@@ -14,11 +14,11 @@ type LikeStatus struct {
 	Liked  bool `json:"liked"`
 }
 
-func GetLikes(db *gorm.DB) gin.HandlerFunc {
+func GetLikes() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, exsit := c.Get("user_id")
 		if !exsit {
-			SH.Error(c, http.StatusUnauthorized, "身份信息验证失败")
+			SH.Error(c, http.StatusUnauthorized, "身份信息验证失败", nil)
 			return
 		}
 
@@ -28,12 +28,12 @@ func GetLikes(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if err := c.ShouldBindJSON(&Likes); err != nil {
-			SH.Error(c, http.StatusBadRequest, "获取帖子列表错误："+err.Error())
+			SH.Error(c, http.StatusBadRequest, "获取帖子列表错误", err)
 			return
 		}
 
-		if err := db.Where("user_id = ? AND post_id IN ?", userID, Likes.PostIDs).Find(&Likes.Likes).Error; err != nil {
-			SH.Error(c, http.StatusBadRequest, "查找点赞列表错误："+err.Error())
+		if err := db.DB.Where("user_id = ? AND post_id IN ?", userID, Likes.PostIDs).Find(&Likes.Likes).Error; err != nil {
+			SH.Error(c, http.StatusBadRequest, "查找点赞列表错误", err)
 			return
 		}
 
@@ -52,4 +52,10 @@ func GetLikes(db *gorm.DB) gin.HandlerFunc {
 
 		SH.Success(c, gin.H{"status": status})
 	}
+}
+
+func GetLikeCount(postID uint) int {
+	var count int64
+	db.DB.Model(&Like{}).Where("post_id = ?", postID).Count(&count)
+	return int(count)
 }
