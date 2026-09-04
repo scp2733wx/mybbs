@@ -42,7 +42,7 @@ func Register() gin.HandlerFunc {
 			Username:     RG.Username,
 			Name:         RG.Name,
 			PasswordHash: string(hashedPassword),
-			Role:         RG.Role,
+			Role:         "student",
 		}
 		if err := db.DB.Create(&Newuser).Error; err != nil {
 			SH.Error(c, http.StatusInternalServerError, "注册用户数据错误", err)
