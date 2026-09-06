@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	power "mybbs/api/admin"
+	"mybbs/api/file"
 	"mybbs/api/post"
 	"mybbs/api/user"
 	"mybbs/middleware"
@@ -19,7 +20,9 @@ func InitRouter() *gin.Engine {
 	protected := api.Group("")
 	protected.Use(middleware.JWTAuth())
 	protected.POST("/posts", post.CreatPost())
+	protected.POST("/posts/:post_id/assents", file.UpLoad())
 	protected.GET("/posts", post.GetPostList())
+	protected.GET("/posts", post.SerchList())
 	protected.GET("/posts/:post_id", post.VeiwPost())
 	protected.DELETE("/posts/:post_id", post.DeletePost())
 	protected.POST("/posts/:post_id/like", post.ClickLike())

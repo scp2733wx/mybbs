@@ -3,7 +3,6 @@ package post
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -12,26 +11,7 @@ import (
 	SH "mybbs/statehandler"
 )
 
-type auther struct {
-	ID       uint   `json:"id"`
-	Username string `json:"username"`
-	Name     string `json:"name"`
-	Role     string `json:"role"`
-}
-
-type PostResponse struct {
-	ID           uint                `json:"id"`
-	Content      string              `json:"content"`
-	Author       auther              `json:"author"`
-	LikeCount    int                 `json:"like_count"`
-	CommentCount int64               `json:"comment_count"`
-	ViewCount    int                 `json:"view_count"`
-	CreatedAt    time.Time           `json:"created_at"`
-	Files        []file.FileResponse `gorm:"foreignKey:PostID" json:"files,omitempty"`
-	Comments     []CommentResponse   `gorm:"foreignKey:PostID" json:"comments,omitempty"`
-}
-
-func GetPostList() gin.HandlerFunc {
+func SerchList() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 		if err != nil {

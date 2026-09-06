@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"mybbs/api/file"
 	db "mybbs/database"
 	SH "mybbs/statehandler"
 )
@@ -38,6 +39,23 @@ func VeiwPost() gin.HandlerFunc {
 
 		if err := db.DB.Model(&Post{}).Where("id = ?", postID).UpdateColumn("view_count", gorm.Expr("view_count + ?", 1)).Error; err == nil {
 			post.ViewCount += 1
+		}
+
+		var files []file.File
+		if err := db.DB.Where("post_id = ?", postID).Find(&files).Error; err != nil {
+			SH.Error(c, http.StatusInternalServerError, "获取文件信息失败", err)
+			return
+		}
+		f_iles := make([]file.FileResponse, 0, len(files))
+		for _, f := range files {
+			f_iles = append(f_iles, file.FileResponse{
+				ID:        f.ID,
+				PostID:    f.PostID,
+				UserID:    f.UserID,
+				FileName:  f.FileName,
+				Size:      f.Size,
+				UpdatedAt: f.UpdatedAt,
+			})
 		}
 
 		comments := make([]CommentResponse, 0, len(post.Comments))

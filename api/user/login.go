@@ -36,15 +36,11 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		expireHour := 24
-		if expireHour <= 0 {
-			expireHour = 24
-		}
 		claims := jwt.MapClaims{
 			"user_id":  userTemp.ID,
 			"username": LG.Username,
 			"role":     userTemp.Role,
-			"exp":      time.Now().Add(time.Hour * time.Duration(expireHour)).Unix(),
+			"exp":      time.Now().Add(time.Hour * time.Duration(config.CFG.JWT.Expirehour)).Unix(),
 		}
 
 		token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(config.CFG.JWT.Secret))
@@ -56,7 +52,7 @@ func Login() gin.HandlerFunc {
 		lresponse := JWT_user{
 			AccessToken: token,
 			TokenType:   "Bearer",
-			ExpiresIn:   int64(expireHour * 3600),
+			ExpiresIn:   int64(config.CFG.JWT.Expirehour * 3600),
 			User: &User{
 				ID:       userTemp.ID,
 				Username: userTemp.Username,

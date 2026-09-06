@@ -1,13 +1,8 @@
--- 临时关闭外键检查，容忍任何半初始化状态，避免 DROP 顺序导致的 FK 报错
--- SET FOREIGN_KEY_CHECKS = 0;
-
--- 删除顺序：先子表（有外键引用的），后父表（被引用的）；post_likes 作为历史遗留兜底清理
--- DROP TABLE IF EXISTS post_likes;
+DROP TABLE IF EXISTS files;
 DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS users;
-
 
 CREATE TABLE users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -84,5 +79,26 @@ CREATE TABLE likes (
     CONSTRAINT chk_likes_user_post_not_zero CHECK (user_id > 0 AND post_id > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 恢复外键检查
-SET FOREIGN_KEY_CHECKS = 1;
+CREATE TABLE files (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '文件ID',
+    post_id BIGINT UNSIGNED NOT NULL COMMENT '所属帖子ID',
+    user_id BIGINT UNSIGNED NOT NULL COMMENT '上传者用户ID',
+    file_name VARCHAR(255) NOT NULL COMMENT '原始文件名',
+    file_path VARCHAR(255) NOT NULL COMMENT '文件存储路径',
+    size BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '文件大小（字节）',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '上传时间',
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+        ON UPDATE CURRENT_TIMESTAMP(3),
+    PRIMARY KEY (id),
+    KEY idx_files_user_id (user_id),
+    KEY idx_files_post_id (post_id),
+    CONSTRAINT fk_files_user
+        FOREIGN KEY (user_id) REFERENCES users (id)
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT fk_files_post
+        FOREIGN KEY (post_id) REFERENCES posts (id)
+        ON UPDATE RESTRICT ON DELETE CASCADE,
+    CONSTRAINT chk_files_file_name_not_empty CHECK (CHAR_LENGTH(file_name) BETWEEN 1 AND 255),
+    CONSTRAINT chk_files_file_path_not_empty CHECK (CHAR_LENGTH(file_path) BETWEEN 1 AND 255),
+    CONSTRAINT chk_files_size_non_negative CHECK (size >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

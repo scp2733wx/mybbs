@@ -1,6 +1,7 @@
 server:
   port: 8080
   logpath: "your_log_path"
+  assentpath: "your_assent_path"
 
 database:
   enabled: true

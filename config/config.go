@@ -15,8 +15,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port    int
-	Logpath string
+	Port       int
+	Logpath    string
+	Assentpath string
 }
 
 type DatabaseConfig struct {
@@ -30,7 +31,7 @@ type DatabaseConfig struct {
 
 type JWTConfig struct {
 	Secret     string
-	expiration int
+	Expirehour int
 }
 
 var CFG Config
@@ -49,7 +50,7 @@ func Load() error {
 	if CFG.Server.Logpath == "" {
 		CFG.Server.Logpath = "logs"
 	}
-	CFG.Server.Logpath = filepath.Join(CFG.Server.Logpath, fmt.Sprintf("/%s.log", time.Now().Format("Monday_15")))
+	CFG.Server.Logpath = filepath.Join(CFG.Server.Logpath, fmt.Sprintf("%s.log", time.Now().Format("Monday_15")))
 
 	return nil
 }
