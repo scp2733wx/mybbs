@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"mybbs/api/file"
 	db "mybbs/database"
 	SH "mybbs/statehandler"
 )
@@ -38,6 +39,18 @@ func DeletePost() gin.HandlerFunc {
 		}
 		if err := db.DB.Where("post_id = ?", postID).Delete(&Like{}).Error; err != nil {
 			SH.Error(c, http.StatusInternalServerError, "删除点赞失败", err)
+			return
+		}
+		var files []file.File
+		db.DB.Where("post_id = ?", postID).Find(&files)
+		for _, f := range files {
+			if err := file.DeleteFile(f.FileName); err != nil {
+				SH.Error(c, http.StatusInternalServerError, "删除本地文件失败", err)
+				return
+			}
+		}
+		if err := db.DB.Where("post_id = ?", postID).Delete(&file.File{}).Error; err != nil {
+			SH.Error(c, http.StatusInternalServerError, "删除文件失败", err)
 			return
 		}
 		if err := db.DB.Delete(&Post{}, postID).Error; err != nil {

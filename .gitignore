@@ -7,7 +7,7 @@ config/config.yaml
 *.log
 logs/
 
-# 测试文件
+# 用户文件
 assets/
 assets/users/
 

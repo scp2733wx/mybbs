@@ -89,7 +89,7 @@ func GetPostList() gin.HandlerFunc {
 				Content:      p.Content,
 				LikeCount:    GetLikeCount(p.ID),
 				ViewCount:    p.ViewCount,
-				CommentCount: int64(len(p.Comments)),
+				CommentCount: GetCommentCount(p.ID),
 				CreatedAt:    p.CreatedAt,
 				Files:        f_iles,
 				Author: auther{

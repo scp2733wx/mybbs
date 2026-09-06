@@ -59,3 +59,9 @@ func CreatComment() gin.HandlerFunc {
 		SH.Success(c, comment)
 	}
 }
+
+func GetCommentCount(postID uint) int64 {
+	var count int64
+	db.DB.Model(&Comment{}).Where("post_id = ?", postID).Count(&count)
+	return count
+}

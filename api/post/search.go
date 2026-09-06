@@ -49,34 +49,14 @@ func SearchList() gin.HandlerFunc {
 			return
 		}
 
-		likeMap := make(map[uint]int, len(posts))
-		if len(posts) > 0 {
-			postIDs := make([]uint, 0, len(posts))
-			for _, p := range posts {
-				postIDs = append(postIDs, p.ID)
-			}
-			var likeRows []struct {
-				PostID uint
-				Count  int64
-			}
-			db.DB.Model(&Like{}).
-				Select("post_id, COUNT(*) as count").
-				Where("post_id IN ?", postIDs).
-				Group("post_id").
-				Scan(&likeRows)
-			for _, r := range likeRows {
-				likeMap[r.PostID] = int(r.Count)
-			}
-		}
-
 		items := make([]PostResponse, 0, len(posts))
 		for _, p := range posts {
 			items = append(items, PostResponse{
 				ID:           p.ID,
 				Content:      p.Content,
-				LikeCount:    likeMap[p.ID],
+				LikeCount:    GetLikeCount(p.ID),
 				ViewCount:    p.ViewCount,
-				CommentCount: int64(len(p.Comments)),
+				CommentCount: GetCommentCount(p.ID),
 				CreatedAt:    p.CreatedAt,
 				Author: auther{
 					ID:       p.User.ID,
