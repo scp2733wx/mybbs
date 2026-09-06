@@ -86,6 +86,7 @@ func VeiwPost() gin.HandlerFunc {
 			LikeCount: GetLikeCount(post.ID),
 			ViewCount: post.ViewCount,
 			CreatedAt: post.CreatedAt,
+			Files:     f_iles,
 			Comments:  comments,
 		})
 	}

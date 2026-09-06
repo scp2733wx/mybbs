@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"mybbs/config"
 	db "mybbs/database"
 	"mybbs/router"
@@ -23,5 +24,14 @@ func main() {
 	defer DB.Close()
 
 	engine := router.InitRouter()
-	engine.Run(fmt.Sprintf(":%d", config.CFG.Server.Port))
+	addr := fmt.Sprintf(":%d", config.CFG.Server.Port)
+
+	if config.CFG.TLS.Enabled {
+		log.Printf("HTTPS 服务启动: https://127.0.0.1%s", addr)
+		err = engine.RunTLS(addr, config.CFG.TLS.Cert, config.CFG.TLS.Key)
+	} else {
+		log.Printf("HTTP 服务启动: http://127.0.0.1%s", addr)
+		err = engine.Run(addr)
+	}
+	SH.PrintError("服务运行失败:", err)
 }

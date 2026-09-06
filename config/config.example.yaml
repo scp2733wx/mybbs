@@ -2,6 +2,9 @@ server:
   port: 8080
   logpath: "your_log_path"
   assentpath: "your_assent_path"
+  frontend:
+    enabled: true
+    path: "frontend/dist"
 
 database:
   enabled: true
@@ -10,7 +13,12 @@ database:
   username: root
   password: "yourpassword"
   name: mybbs
-  
+
 jwt:
   secret: "your_jwt_secret_key"
   expiration: 24
+
+tls:
+  enabled: false
+  cert: "cert.pem"
+  key: "key.pem"

@@ -7,9 +7,16 @@ config/config.yaml
 *.log
 logs/
 
-# 测试文件
+# 用户文件
 assets/
 assets/users/
+
+# 前端构建产物
+frontend/dist/
+
+# TLS 证书与私钥
+cert.pem
+key.pem
 
 # IDE 配置
 .vscode/settings.json
