@@ -11,8 +11,6 @@ logs/
 assets/
 assets/users/
 
-# 前端构建产物
-frontend/dist/
 
 # TLS 证书与私钥
 cert.pem

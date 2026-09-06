@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>mybbs 论坛</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #1a1d24;
+    --card-2: #21252e;
+    --border: #2a2f3a;
+    --text: #e6e8eb;
+    --muted: #8a9099;
+    --primary: #4f8cff;
+    --primary-hover: #6a9eff;
+    --danger: #ff5c5c;
+    --success: #3ec47b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header .brand { font-weight: 700; font-size: 18px; }
+  header .spacer { flex: 1; }
+  header input[type="text"], header input[type="search"] {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 280px;
+    max-width: 40vw;
+  }
+  .btn {
+    background: var(--card-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn:hover { border-color: var(--primary); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn.primary:hover { background: var(--primary-hover); }
+  .btn.danger { color: var(--danger); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .post .meta { color: var(--muted); font-size: 13px; margin-top: 8px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .post .author { font-weight: 600; }
+  .post .content { white-space: pre-wrap; word-break: break-word; }
+  .post .actions { margin-top: 10px; display: flex; gap: 8px; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; background: var(--card-2); border: 1px solid var(--border); color: var(--muted); }
+  .badge.admin { color: var(--danger); border-color: var(--danger); }
+  .composer textarea {
+    width: 100%;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 10px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .composer .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: flex; align-items: center; justify-content: center; z-index: 50;
+  }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    width: 340px;
+    max-width: 92vw;
+  }
+  .modal h2 { margin: 0 0 14px; font-size: 18px; }
+  .modal label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+  .modal input {
+    width: 100%;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .comment { padding: 10px 0; border-top: 1px solid var(--border); }
+  .comment .meta { color: var(--muted); font-size: 12px; }
+  .empty { text-align: center; color: var(--muted); padding: 40px 0; }
+  .toast {
+    position: fixed;
+    bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 18px;
+    z-index: 100;
+    box-shadow: 0 6px 24px rgba(0,0,0,.4);
+  }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+  .pagination { display: flex; gap: 8px; justify-content: center; margin: 16px 0; }
+  .like-btn.liked { color: var(--danger); border-color: var(--danger); }
+  .files { margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .file-item { margin: 2px 0; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 600px) {
+    header input[type="text"], header input[type="search"] { width: 140px; }
+    main { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">mybbs</div>
+  <form id="searchForm" style="display:flex; gap:6px;">
+    <input type="search" id="searchInput" placeholder="搜索帖子/用户" />
+    <button class="btn" type="submit">搜索</button>
+    <button class="btn" type="button" id="clearSearch">清空</button>
+  </form>
+  <div class="spacer"></div>
+  <div id="userArea"></div>
+</header>
+
+<main id="app"></main>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+"use strict";
+
+const API = "/api/v1";
+const TOKEN_KEY = "mybbs_token";
+const USER_KEY = "mybbs_user";
+
+// ===== 工具 =====
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
+function getUser() {
+  try { return JSON.parse(localStorage.getItem(USER_KEY) || "null"); }
+  catch { return null; }
+}
+function setAuth(loginData) {
+  localStorage.setItem(TOKEN_KEY, loginData.access_token);
+  localStorage.setItem(USER_KEY, JSON.stringify(loginData.user));
+}
+function clearAuth() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+async function request(path, { method = "GET", body, params, isForm = false } = {}) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers["Authorization"] = "Bearer " + token;
+
+  let url = API + path;
+  if (params) {
+    const qs = new URLSearchParams(params).toString();
+    if (qs) url += (url.includes("?") ? "&" : "?") + qs;
+  }
+  let payload;
+  if (body !== undefined) {
+    if (isForm) payload = body;
+    else { headers["Content-Type"] = "application/json"; payload = JSON.stringify(body); }
+  }
+  let resp;
+  try {
+    resp = await fetch(url, { method, headers, body: payload });
+  } catch (e) {
+    throw new Error("网络错误：" + e.message);
+  }
+  let data = null;
+  const text = await resp.text();
+  if (text) {
+    try { data = JSON.parse(text); } catch { data = { msg: text }; }
+  }
+  if (!resp.ok) {
+    const msg = (data && data.msg) || ("HTTP " + resp.status);
+    const err = new Error(msg);
+    err.code = data && data.code;
+    err.status = resp.status;
+    if (resp.status === 401) {
+      clearAuth();
+      renderHeader();
+      showAuth("login");
+    }
+    throw err;
+  }
+  if (data && typeof data.code === "number" && data.code !== 0) {
+    const err = new Error(data.msg || "请求失败");
+    err.code = data.code;
+    throw err;
+  }
+  return data ? data.data : data;
+}
+
+function toast(msg, isErr = false) {
+  const root = document.getElementById("toastRoot");
+  const el = document.createElement("div");
+  el.className = "toast" + (isErr ? " error" : "");
+  el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+function escapeHtml(s) {
+  if (s === undefined || s === null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function formatTime(t) {
+  if (!t) return "";
+  const d = new Date(t);
+  if (isNaN(d)) return String(t);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 60) return "刚刚";
+  if (diff < 3600) return Math.floor(diff/60) + " 分钟前";
+  if (diff < 86400) return Math.floor(diff/3600) + " 小时前";
+  if (diff < 86400*7) return Math.floor(diff/86400) + " 天前";
+  return d.toLocaleString("zh-CN", { hour12: false });
+}
+
+// ===== 路由（简易 hash 路由） =====
+let route = { name: "list", params: {} };
+function navigate(name, params = {}) {
+  route = { name, params };
+  render();
+  window.scrollTo(0, 0);
+}
+
+// ===== 渲染：顶部 =====
+function renderHeader() {
+  const area = document.getElementById("userArea");
+  const u = getUser();
+  if (u) {
+    area.innerHTML = `
+      <span class="badge${u.role === "admin" ? " admin" : ""}">${escapeHtml(u.name)}（${escapeHtml(u.username)}）</span>
+      <button class="btn" id="newPostBtn">发帖</button>
+      <button class="btn danger" id="logoutBtn">退出</button>
+    `;
+    document.getElementById("logoutBtn").onclick = () => {
+      clearAuth(); renderHeader(); navigate("list");
+    };
+    document.getElementById("newPostBtn").onclick = () => showComposer();
+  } else {
+    area.innerHTML = `
+      <button class="btn primary" id="loginBtn">登录</button>
+      <button class="btn" id="registerBtn">注册</button>
+    `;
+    document.getElementById("loginBtn").onclick = () => showAuth("login");
+    document.getElementById("registerBtn").onclick = () => showAuth("register");
+  }
+}
+
+// ===== 渲染：主区域 =====
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  if (route.name === "list") renderList(app);
+  else if (route.name === "detail") renderDetail(app, route.params.id);
+}
+
+// ===== 帖子列表 =====
+let listState = { loading: false, page: 1, pageSize: 20, total: 0, items: [], q: "" };
+
+async function loadList() {
+  listState.loading = true;
+  renderListItems();
+  try {
+    const path = listState.q ? "/posts/search" : "/posts";
+    const params = { page: listState.page, page_size: listState.pageSize };
+    if (listState.q) params.q = listState.q;
+    const data = await request(path, { params });
+    listState.items = data.items || [];
+    listState.total = data.meta ? data.meta.total : listState.items.length;
+    // 批量获取当前用户是否点赞
+    if (getUser() && listState.items.length > 0) {
+      try {
+        const likes = await request("/posts/likes", {
+          method: "POST",
+          body: { post_ids: listState.items.map(p => p.id) }
+        });
+        const map = {};
+        (likes.status || []).forEach(s => { map[s.post_id] = s.liked; });
+        listState.items.forEach(p => { p._liked = map[p.id] || false; });
+      } catch (e) { /* 忽略点赞状态错误 */ }
+    }
+  } catch (e) {
+    toast(e.message, true);
+    listState.items = [];
+  } finally {
+    listState.loading = false;
+    renderListItems();
+  }
+}
+
+function renderList(app) {
+  const wrap = document.createElement("div");
+  wrap.id = "listView";
+  app.appendChild(wrap);
+  renderListItems();
+  if (listState.items.length === 0 && !listState.loading) loadList();
+}
+
+function renderListItems() {
+  const wrap = document.getElementById("listView");
+  if (!wrap) return;
+  const { page, pageSize, total, items, loading, q } = listState;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const u = getUser();
+
+  let html = "";
+  if (loading && items.length === 0) {
+    html = `<div class="empty"><span class="spinner"></span> 加载中…</div>`;
+  } else if (!loading && items.length === 0) {
+    html = `<div class="empty">${q ? "未找到匹配的帖子" : "还没有帖子，发一条试试吧"}</div>`;
+  } else {
+    html = items.map(p => `
+      <div class="card post" data-id="${p.id}">
+        <div><span class="author">${escapeHtml(p.author.name)}</span>
+          <span class="badge${p.author.role === "admin" ? " admin" : ""}">@${escapeHtml(p.author.username)}</span>
+        </div>
+        <div class="content">${escapeHtml(p.content)}</div>
+        ${p.files && p.files.length ? `<div class="files">${p.files.map(f => `<div class="file-item">📎 ${escapeHtml(f.file_name)}（${formatSize(f.size)}）</div>`).join("")}</div>` : ""}
+        <div class="meta">
+          <span>👍 ${p.like_count}</span>
+          <span>💬 ${p.comment_count}</span>
+          <span>👁 ${p.view_count}</span>
+          <span>${formatTime(p.created_at)}</span>
+        </div>
+        <div class="actions">
+          <button class="btn like-btn${p._liked ? " liked" : ""}" data-act="like" data-id="${p.id}">${p._liked ? "已赞" : "点赞"}</button>
+          <button class="btn" data-act="view" data-id="${p.id}">查看</button>
+          ${u && (u.id === p.author.id || u.role === "admin") ? `<button class="btn danger" data-act="del" data-id="${p.id}">删除</button>` : ""}
+        </div>
+      </div>
+    `).join("");
+  }
+  if (total > pageSize) {
+    html += `
+      <div class="pagination">
+        <button class="btn" ${page <= 1 ? "disabled" : ""} data-act="prev">上一页</button>
+        <span style="line-height:30px;">${page} / ${totalPages}</span>
+        <button class="btn" ${page >= totalPages ? "disabled" : ""} data-act="next">下一页</button>
+      </div>
+    `;
+  }
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll("[data-act]").forEach(btn => {
+    btn.onclick = async () => {
+      const act = btn.dataset.act;
+      const id = +btn.dataset.id;
+      if (act === "view") navigate("detail", { id });
+      else if (act === "prev") { listState.page = Math.max(1, page - 1); loadList(); }
+      else if (act === "next") { listState.page = Math.min(totalPages, page + 1); loadList(); }
+      else if (act === "del") { await deletePost(id, () => loadList()); }
+      else if (act === "like") { await toggleLike(id); }
+    };
+  });
+}
+
+function formatSize(bytes) {
+  if (!bytes && bytes !== 0) return "";
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB";
+  return (bytes/1024/1024).toFixed(1) + " MB";
+}
+
+async function toggleLike(postId) {
+  if (!getUser()) { showAuth("login"); return; }
+  try {
+    const r = await request(`/posts/${postId}/like`, { method: "POST" });
+    // 局部刷新列表
+    const p = listState.items.find(x => x.id === postId);
+    if (p) {
+      p._liked = r.is_liked;
+      p.like_count += r.is_liked ? 1 : -1;
+      renderListItems();
+    }
+  } catch (e) { toast(e.message, true); }
+}
+
+async function deletePost(postId, after) {
+  if (!confirm("确定删除这条帖子？")) return;
+  const u = getUser();
+  try {
+    if (u && u.role === "admin") {
+      await request(`/admin/posts/${postId}`, { method: "DELETE" });
+    } else {
+      await request(`/posts/${postId}`, { method: "DELETE" });
+    }
+    toast("已删除");
+    after && after();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ===== 帖子详情 =====
+async function renderDetail(app, id) {
+  const wrap = document.createElement("div");
+  wrap.id = "detailView";
+  wrap.innerHTML = `<div class="empty"><span class="spinner"></span> 加载中…</div>`;
+  app.appendChild(wrap);
+
+  let post;
+  try {
+    post = await request(`/posts/${id}`);
+  } catch (e) {
+    wrap.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>
+      <div style="text-align:center;"><button class="btn" onclick="navigate('list')">返回列表</button></div>`;
+    return;
+  }
+  const u = getUser();
+  let liked = false;
+  if (u) {
+    try {
+      const r = await request("/posts/likes", { method: "POST", body: { post_ids: [post.id] } });
+      liked = (r.status || [])[0]?.liked || false;
+    } catch {}
+  }
+
+  let html = `
+    <div class="card post">
+      <div><span class="author">${escapeHtml(post.author.name)}</span>
+        <span class="badge${post.author.role === "admin" ? " admin" : ""}">@${escapeHtml(post.author.username)}</span>
+      </div>
+      <div class="content">${escapeHtml(post.content)}</div>
+      ${post.files && post.files.length ? `<div class="files">${post.files.map(f => `<div class="file-item">📎 ${escapeHtml(f.file_name)}（${formatSize(f.size)}）</div>`).join("")}</div>` : ""}
+      <div class="meta">
+        <span>👍 ${post.like_count}</span>
+        <span>💬 ${(post.comments||[]).length}</span>
+        <span>👁 ${post.view_count}</span>
+        <span>${formatTime(post.created_at)}</span>
+      </div>
+      <div class="actions">
+        <button class="btn like-btn${liked ? " liked" : ""}" id="detailLikeBtn">${liked ? "已赞" : "点赞"}</button>
+        <button class="btn" onclick="navigate('list')">返回列表</button>
+        ${u && (u.id === post.author.id || u.role === "admin") ? `<button class="btn danger" id="detailDelBtn">删除</button>` : ""}
+      </div>
+    </div>
+
+    ${u && (u.id === post.author.id || u.role === "admin") ? `
+    <div class="card">
+      <h3 style="margin:0 0 10px; font-size:14px; color:var(--muted);">附件管理</h3>
+      <input type="file" id="fileInput" style="font-size:13px;" />
+      <div class="row">
+        <button class="btn primary" id="uploadBtn">上传附件</button>
+        <span style="font-size:12px; color:var(--muted);">单个文件最大 10MB</span>
+      </div>
+      <div id="fileList" style="margin-top:10px;">
+        ${(post.files||[]).map(f => `<div class="file-item">📎 ${escapeHtml(f.file_name)}（${formatSize(f.size)}）</div>`).join("") || '<div style="color:var(--muted);font-size:13px;">暂无附件</div>'}
+      </div>
+    </div>
+    ` : (post.files && post.files.length ? `
+    <div class="card">
+      <h3 style="margin:0 0 10px; font-size:14px; color:var(--muted);">附件</h3>
+      ${post.files.map(f => `<div class="file-item">📎 ${escapeHtml(f.file_name)}（${formatSize(f.size)}）</div>`).join("")}
+    </div>
+    ` : "")}
+
+    <div class="card composer">
+      <textarea id="commentInput" placeholder="${u ? "写下你的评论…" : "登录后可评论"}" ${u ? "" : "disabled"}></textarea>
+      <div class="row">
+        ${u ? `<button class="btn primary" id="commentBtn">发表评论</button>` : `<button class="btn" onclick="showAuth('login')">登录评论</button>`}
+      </div>
+    </div>
+
+    <h3 style="color:var(--muted); font-size:14px; margin:10px 2px;">评论（${(post.comments||[]).length}）</h3>
+  `;
+  const commentsHtml = (post.comments || []).map(c => `
+    <div class="card comment">
+      <div><span class="author">${escapeHtml(c.author.name)}</span>
+        <span class="badge${c.author.role === "admin" ? " admin" : ""}">@${escapeHtml(c.author.username)}</span>
+      </div>
+      <div class="content">${escapeHtml(c.content)}</div>
+      <div class="meta">${formatTime(c.created_at)}</div>
+    </div>
+  `).join("");
+  wrap.innerHTML = html + (commentsHtml || `<div class="empty">还没有评论</div>`);
+
+  const likeBtn = document.getElementById("detailLikeBtn");
+  if (likeBtn) likeBtn.onclick = async () => {
+    if (!getUser()) { showAuth("login"); return; }
+    try {
+      const r = await request(`/posts/${post.id}/like`, { method: "POST" });
+      liked = r.is_liked;
+      post.like_count += liked ? 1 : -1;
+      likeBtn.classList.toggle("liked", liked);
+      likeBtn.textContent = liked ? "已赞" : "点赞";
+      const meta = wrap.querySelector(".post .meta");
+      if (meta) meta.children[0].textContent = "👍 " + post.like_count;
+    } catch (e) { toast(e.message, true); }
+  };
+  const delBtn = document.getElementById("detailDelBtn");
+  if (delBtn) delBtn.onclick = async () => {
+    await deletePost(post.id, () => navigate("list"));
+  };
+  const cBtn = document.getElementById("commentBtn");
+  if (cBtn) cBtn.onclick = async () => {
+    const ta = document.getElementById("commentInput");
+    const content = ta.value.trim();
+    if (!content) { toast("评论不能为空", true); return; }
+    cBtn.disabled = true;
+    try {
+      await request(`/posts/${post.id}/comment`, { method: "POST", body: { content } });
+      toast("评论成功");
+      renderDetail(app, id);
+    } catch (e) { toast(e.message, true); }
+    finally { cBtn.disabled = false; }
+  };
+  const uploadBtn = document.getElementById("uploadBtn");
+  if (uploadBtn) uploadBtn.onclick = async () => {
+    const input = document.getElementById("fileInput");
+    if (!input.files || !input.files[0]) { toast("请先选择文件", true); return; }
+    const formData = new FormData();
+    formData.append("file", input.files[0]);
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = "上传中…";
+    try {
+      await request(`/posts/${post.id}/assents`, { method: "POST", body: formData, isForm: true });
+      toast("上传成功");
+      renderDetail(app, id);
+    } catch (e) { toast(e.message, true); }
+    finally { uploadBtn.disabled = false; uploadBtn.textContent = "上传附件"; }
+  };
+}
+
+// ===== 模态：登录/注册 =====
+function showAuth(mode) {
+  const root = document.getElementById("modalRoot");
+  const isLogin = mode === "login";
+  root.innerHTML = `
+    <div class="modal-backdrop">
+      <div class="modal">
+        <h2>${isLogin ? "登录" : "注册"}</h2>
+        <label>用户名</label>
+        <input id="m_username" autocomplete="username" />
+        ${isLogin ? "" : '<label>姓名</label><input id="m_name" />'}
+        <label>密码</label>
+        <input id="m_password" type="password" autocomplete="${isLogin ? "current-password" : "new-password"}" />
+        <div class="actions">
+          <button class="btn" id="authCancel">取消</button>
+          <button class="btn primary" id="authSubmit">${isLogin ? "登录" : "注册"}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById("authCancel").onclick = () => root.innerHTML = "";
+  document.getElementById("authSubmit").onclick = async () => {
+    const username = document.getElementById("m_username").value.trim();
+    const password = document.getElementById("m_password").value;
+    if (!username || !password) { toast("请填写用户名和密码", true); return; }
+    const btn = document.getElementById("authSubmit");
+    btn.disabled = true;
+    try {
+      if (isLogin) {
+        const data = await request("/auth/login", { method: "POST", body: { username, password } });
+        setAuth(data);
+        renderHeader();
+        root.innerHTML = "";
+        toast("登录成功");
+        loadList();
+      } else {
+        const name = document.getElementById("m_name").value.trim() || username;
+        await request("/auth/register", { method: "POST", body: { username, name, password, role: "student" } });
+        toast("注册成功，请登录");
+        showAuth("login");
+      }
+    } catch (e) { toast(e.message, true); }
+    finally { btn.disabled = false; }
+  };
+  document.querySelector(".modal-backdrop").onclick = (e) => {
+    if (e.target.classList.contains("modal-backdrop")) root.innerHTML = "";
+  };
+  document.getElementById("m_username").focus();
+  document.getElementById("m_password").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("authSubmit").click();
+  });
+}
+
+// ===== 模态：发帖 =====
+function showComposer() {
+  if (!getUser()) { showAuth("login"); return; }
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = `
+    <div class="modal-backdrop">
+      <div class="modal" style="width:520px;">
+        <h2>发布帖子</h2>
+        <label>内容（最多 2000 字）</label>
+        <textarea id="c_content" style="width:100%;min-height:120px;background:var(--card-2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:10px;font-family:inherit;font-size:14px;resize:vertical;"></textarea>
+        <label style="margin-top:10px;">附件（可选，发布后上传）</label>
+        <div style="color:var(--muted);font-size:12px;">保存帖子后可在详情页上传附件。</div>
+        <div class="actions">
+          <button class="btn" id="cCancel">取消</button>
+          <button class="btn primary" id="cSubmit">发布</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById("cCancel").onclick = () => root.innerHTML = "";
+  document.getElementById("cSubmit").onclick = async () => {
+    const content = document.getElementById("c_content").value.trim();
+    if (!content) { toast("内容不能为空", true); return; }
+    const btn = document.getElementById("cSubmit");
+    btn.disabled = true;
+    try {
+      const post = await request("/posts", { method: "POST", body: { content } });
+      toast("发布成功");
+      root.innerHTML = "";
+      navigate("detail", { id: post.id });
+    } catch (e) { toast(e.message, true); }
+    finally { btn.disabled = false; }
+  };
+  document.querySelector(".modal-backdrop").onclick = (e) => {
+    if (e.target.classList.contains("modal-backdrop")) root.innerHTML = "";
+  };
+  setTimeout(() => document.getElementById("c_content").focus(), 0);
+}
+
+// ===== 事件绑定 =====
+document.getElementById("searchForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  listState.q = document.getElementById("searchInput").value.trim();
+  listState.page = 1;
+  listState.items = [];
+  if (route.name !== "list") navigate("list");
+  else loadList();
+});
+document.getElementById("clearSearch").onclick = () => {
+  document.getElementById("searchInput").value = "";
+  listState.q = "";
+  listState.page = 1;
+  listState.items = [];
+  loadList();
+};
+
+// ===== 启动 =====
+renderHeader();
+navigate("list");
+</script>
+</body>
+</html>
