@@ -22,7 +22,7 @@ func InitRouter() *gin.Engine {
 	protected.POST("/posts", post.CreatPost())
 	protected.POST("/posts/:post_id/assents", file.UpLoad())
 	protected.GET("/posts", post.GetPostList())
-	protected.GET("/posts", post.SerchList())
+	protected.GET("/posts/search", post.SearchList())
 	protected.GET("/posts/:post_id", post.VeiwPost())
 	protected.DELETE("/posts/:post_id", post.DeletePost())
 	protected.POST("/posts/:post_id/like", post.ClickLike())

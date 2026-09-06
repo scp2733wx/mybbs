@@ -7,5 +7,9 @@ config/config.yaml
 *.log
 logs/
 
+# 测试文件
+assets/
+assets/users/
+
 # IDE 配置
 .vscode/settings.json
